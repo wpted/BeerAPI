@@ -33,7 +33,7 @@ func (p *PostgreSQL) Close() {
 
 // -------------------- Access Database ---------------------
 
-func (p *PostgreSQL) CreateBeer(b model.Beer) {
+func (p *PostgreSQL) InsertBeer(b model.Beer) {
 	insertQuery := " INSERT INTO beers (name, price, company) VALUES($1, $2, $3)"
 	_, err := p.DB.Exec(insertQuery, b.Name, b.Price, b.Company)
 	if err != nil {
