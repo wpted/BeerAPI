@@ -37,16 +37,16 @@ func (r *Redis) Close() {
 
 // -------------------- Access Database ---------------------
 
-func AddToRedis(ctx context.Context, c *redis.Client, key string, value any, expiresAt time.Duration) error {
-	err := c.Set(ctx, key, value, expiresAt).Err()
+func (r *Redis) AddToRedis(ctx context.Context, key string, value any, expiresAt time.Duration) error {
+	err := r.Client.Set(ctx, key, value, expiresAt).Err()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetFromRedis(ctx context.Context, c *redis.Client, key string) (string, error) {
-	result, err := c.Get(ctx, key).Result()
+func (r *Redis) GetFromRedis(ctx context.Context, key string) (string, error) {
+	result, err := r.Client.Get(ctx, key).Result()
 	switch {
 	case err == redis.Nil:
 		fmt.Printf("%s does not exist within the cache pool", key)
