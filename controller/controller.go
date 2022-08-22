@@ -9,7 +9,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+const CacheExpirationTime = 180 * time.Second
 
 // BeerHandler is a struct that contains a pool of the PSQL connection and the Redis connection
 type BeerHandler struct {
@@ -53,7 +56,7 @@ func (b *BeerHandler) GetBeerByID(w http.ResponseWriter, r *http.Request) {
 	result := b.GetBeer(id)
 	resultJson, err := result.MarshalBinary()
 	// after getting from psql, add to the cache pool
-	err = b.Redis.AddToRedis(context.Background(), idString, resultJson, 0)
+	err = b.Redis.AddToRedis(context.Background(), idString, resultJson, CacheExpirationTime)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
