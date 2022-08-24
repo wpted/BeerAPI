@@ -36,14 +36,31 @@ func (p *PostgreSQL) Close() {
 
 // -------------------- Access Database ---------------------
 
-// InsertBeer takes the given beer model and insert it into the PSQL database
-func (p *PostgreSQL) InsertBeer(b model.Beer) {
-	insertQuery := " INSERT INTO beers (name, price, company) VALUES($1, $2, $3)"
-	_, err := p.DB.Exec(insertQuery, b.Name, b.Price, b.Company)
-	if err != nil {
-		log.Fatal(err.Error())
+// BeerExist checks whether the given beer name is already in the database
+func (p *PostgreSQL) BeerExist(name string) bool {
+	beer := model.Beer{}
+	selectQuery := "SELECT * FROM beers WHERE name=$1"
+	row := p.DB.QueryRow(selectQuery, name)
+	err := row.Scan(&beer.ID, &beer.Name, &beer.Price, &beer.Company)
+	if err == sql.ErrNoRows || err != nil {
+		fmt.Println(err.Error())
+		return false
 	}
-	fmt.Println(b)
+	return true
+}
+
+// InsertBeer takes the given beer model and insert it into the PSQL database
+func (p *PostgreSQL) InsertBeer(b model.Beer) error {
+	if p.BeerExist(b.Name) {
+		return fmt.Errorf("beer with name %s already exists", b.Name)
+	} else {
+		insertQuery := " INSERT INTO beers (name, price, company) VALUES($1, $2, $3)"
+		_, err := p.DB.Exec(insertQuery, b.Name, b.Price, b.Company)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 }
 
 // GetBeers gets all existing beers within the PSQL database
